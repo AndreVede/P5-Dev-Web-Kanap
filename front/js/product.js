@@ -72,6 +72,7 @@ const testInputs = function () {
   );
 };
 
+// Gestion de l'évènement du click sur le bouton AddToCart
 const buttonAddToCart = document
   .getElementById("addToCart")
   .addEventListener("click", () => {
