@@ -102,7 +102,12 @@ const buttonAddToCart = document
       }
       // sauvegarde du panier
       localStorage.setItem("cart", JSON.stringify(cart));
-      alert(elem.count + " articles ajoutés au panier !");
+      alert(
+        elem.count +
+          ` article${Number(elem.count) < 2 ? "" : "s"} ajouté${
+            Number(elem.count) < 2 ? "" : "s"
+          } au panier !`
+      );
     } else {
       alert("Veuillez renseigner une couleur et une quantité !");
     }
