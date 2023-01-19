@@ -3,14 +3,96 @@ const urlBack = "http://localhost:3000/api/products/";
 var cart =
   typeof localStorage.cart !== "undefined" ? JSON.parse(localStorage.cart) : [];
 
+/**
+ * Récupère les prix et en fait un total
+ * Le DOM est également mis à jour
+ * @returns total des prix
+ */
+const getTotal = function () {
+  const totalDOM = document.getElementById("totalPrice");
+  if (cart !== []) {
+    var total = 0;
+    return Promise.all(
+      cart.map(async (product) => {
+        await fetch(urlBack + product.id.toString())
+          .then((res) => res.json())
+          .then((res) => {
+            total = total + Number(product.count) * res.price;
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+    ).then(() => {
+      totalDOM.innerText = total.toString();
+      return total;
+    });
+  } else {
+    totalDOM.innerText = "0";
+    return 0;
+  }
+};
+
+/**
+ * Récupère le total des articles
+ * Le DOM est également mis à jour
+ * @returns total des articles
+ */
+const getTotalOfItem = function () {
+  const totalItemsDOM = document.getElementById("totalQuantity");
+  if (cart !== []) {
+    var total = 0;
+    return Promise.all(
+      cart.map(async (product) => {
+        await fetch(urlBack + product.id.toString())
+          .then((res) => {
+            return res.json();
+          })
+          .then((res) => {
+            total = total + Number(product.count);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      })
+    ).then(() => {
+      totalItemsDOM.innerText = total.toString();
+      return total;
+    });
+  } else {
+    totalItemsDOM.innerText = "0";
+    return 0;
+  }
+};
+
+/**
+ * Met à jour le nombre d'article d'un produit
+ * @param {number} productId Id du produit à mettre à jour
+ * @param {string} color Couleur du produit à mettre à jour
+ * @param {string} newCount Nouveau nombre d'article
+ */
+const updateCount = function (productId, color, newCount) {
+  const elemInCart = cart.find((e) => e.id === productId && e.color === color);
+  cart[cart.indexOf(elemInCart)] = {
+    id: productId,
+    count: newCount.toString(), //incrémenter
+    color: color,
+  };
+  localStorage.setItem("cart", JSON.stringify(cart));
+  getTotalOfItem();
+  getTotal();
+};
+
+// Afficher les produits -----
 const sectionCart = document.getElementById("cart__items");
 
-// Afficher les produits
 if (cart !== []) {
   cart.map((product) => {
-    // création des éléments du DOM de l'item
+    // création des éléments du DOM de l'item -----
     const article = document.createElement("article");
     article.classList.add("cart__item");
+    article.setAttribute("data-id", product.id.toString());
+    article.setAttribute("data-color", product.color);
 
     const imageContainer = document.createElement("div");
     imageContainer.classList.add("cart__item__img");
@@ -35,7 +117,7 @@ if (cart !== []) {
 
     settingsDelete.append(deleteCommand);
 
-    // fetch infos du produit
+    // fetch infos du produit -----
     fetch(urlBack + product.id.toString())
       .then((res) => {
         return res.json();
@@ -78,7 +160,7 @@ if (cart !== []) {
         settingsQuantity.append(count);
         settingsQuantity.append(settingCount);
 
-        // Assemblage de l'élément
+        // Assemblage de l'élément -----
         contentSettings.append(settingsQuantity);
         contentSettings.append(settingsDelete);
 
@@ -96,69 +178,14 @@ if (cart !== []) {
         // Remplir le prix total
         getTotalOfItem();
         getTotal();
+
+        // création du listener sur les inputs -----
+        settingCount.onchange = (e) => {
+          updateCount(product.id, product.color, e.target.value);
+        };
       })
       .catch((error) => {
         console.error(error);
       });
   });
 }
-
-/**
- * Récupère les prix et en fait un total
- * @returns total des prix
- */
-const getTotal = function () {
-  const totalDOM = document.getElementById("totalPrice");
-  if (cart !== []) {
-    var total = 0;
-    return Promise.all(
-      cart.map(async (product) => {
-        await fetch(urlBack + product.id.toString())
-          .then((res) => res.json())
-          .then((res) => {
-            total = total + Number(product.count) * res.price;
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      })
-    ).then(() => {
-      totalDOM.innerText = total.toString();
-      return total;
-    });
-  } else {
-    totalDOM.innerText = "0";
-    return 0;
-  }
-};
-
-/**
- * Récupère le total des articles
- * @returns total des articles
- */
-const getTotalOfItem = function () {
-  const totalItemsDOM = document.getElementById("totalQuantity");
-  if (cart !== []) {
-    var total = 0;
-    return Promise.all(
-      cart.map(async (product) => {
-        await fetch(urlBack + product.id.toString())
-          .then((res) => {
-            return res.json();
-          })
-          .then((res) => {
-            total = total + Number(product.count);
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      })
-    ).then(() => {
-      totalItemsDOM.innerText = total.toString();
-      return total;
-    });
-  } else {
-    totalItemsDOM.innerText = "0";
-    return 0;
-  }
-};
