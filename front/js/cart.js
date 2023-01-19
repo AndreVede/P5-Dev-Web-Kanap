@@ -109,10 +109,10 @@ if (cart !== []) {
 const getTotal = function () {
   const totalDOM = document.getElementById("totalPrice");
   if (cart !== []) {
-    return new Promise((resolve, reject) => {
-      var total = 0;
-      cart.map((product) => {
-        fetch(urlBack + product.id)
+    var total = 0;
+    return Promise.all(
+      cart.map(async (product) => {
+        await fetch(urlBack + product.id)
           .then((res) => res.json())
           .then((res) => {
             total = total + Number(product.count) * res.price;
@@ -120,11 +120,10 @@ const getTotal = function () {
           .catch((error) => {
             console.error(error);
           });
-      });
-      resolve(total);
-    }).then((res) => {
-      totalDOM.innerText = res.toString();
-      return res;
+      })
+    ).then(() => {
+      totalDOM.innerText = total.toString();
+      return total;
     });
   } else {
     totalDOM.innerText = "0";
