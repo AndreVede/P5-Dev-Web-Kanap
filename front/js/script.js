@@ -1,42 +1,46 @@
-const urlBack = 'http://localhost:3000/api/products/';
+const urlBack = "http://localhost:3000/api/products/";
 
-const itemsContainer = document.getElementById('items');
+const itemsContainer = document.getElementById("items");
 
 // Récupération des items
-const items = fetch(urlBack).then((res) => {
+fetch(urlBack)
+  .then((res) => {
     // Interprétation du body json
     return res.json();
-}).then((res) => {
+  })
+  .then((res) => {
     // Création des cartes products
     for (product of res) {
-        
-        // Link
-        const link = document.createElement('a');
-        link.href = "./product.html?id=" + product._id.toString();
-        
-        const article = document.createElement('article');
-        
-        // Image
-        const img = document.createElement('img');
-        img.src = product.imageUrl;
-        img.alt = product.altTxt;
+      // Link
+      const link = document.createElement("a");
+      link.href = "./product.html?id=" + product._id.toString();
 
-        // Titre
-        const title = document.createElement('h3');
-        title.classList.add('productName');
-        title.innerText = product.name;
+      const article = document.createElement("article");
 
-        // Description
-        const description = document.createElement('p');
-        description.classList.add('productDescription');
-        description.innerText = product.description;
+      // Image
+      const img = document.createElement("img");
+      img.src = product.imageUrl;
+      img.alt = product.altTxt;
 
-        // Imbrication des éléments
-        article.append(img);
-        article.append(title);
-        article.append(description);
-        link.append(article);
+      // Titre
+      const title = document.createElement("h3");
+      title.classList.add("productName");
+      title.innerText = product.name;
 
-        itemsContainer.append(link);
+      // Description
+      const description = document.createElement("p");
+      description.classList.add("productDescription");
+      description.innerText = product.description;
+
+      // Imbrication des éléments
+      article.append(img);
+      article.append(title);
+      article.append(description);
+      link.append(article);
+
+      itemsContainer.append(link);
     }
-});
+  })
+  .catch((error) => {
+    console.error(error);
+  });
