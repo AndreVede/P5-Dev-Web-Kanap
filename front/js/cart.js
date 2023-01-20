@@ -89,10 +89,8 @@ const updateCount = function (productId, color, newCount) {
  * @param {string} color Couleur du produit à supprimer
  */
 const deleteProduct = function (productId, color) {
-  console.log(cart);
   const elemInCart = cart.find((e) => e.id === productId && e.color === color);
   cart.splice(cart.indexOf(elemInCart), 1);
-  console.log(cart);
   localStorage.setItem("cart", JSON.stringify(cart));
 
   // refresh list
