@@ -107,11 +107,11 @@ const deleteProduct = function (productId, color) {
 /**
  * Initialise le panier
  */
-const initCart = function () {
+const initCart = async function () {
   const sectionCart = document.getElementById("cart__items");
 
   if (cart !== []) {
-    cart.map((product) => {
+    cart.map(async (product) => {
       // création des éléments du DOM de l'item -----
       const article = document.createElement("article");
       article.classList.add("cart__item");
@@ -142,7 +142,7 @@ const initCart = function () {
       settingsDelete.append(deleteCommand);
 
       // fetch infos du produit -----
-      fetch(urlBack + product.id.toString())
+      await fetch(urlBack + product.id.toString())
         .then((res) => {
           return res.json();
         })
@@ -199,10 +199,6 @@ const initCart = function () {
           // ajouter dans le DOM
           sectionCart.append(article);
 
-          // Remplir le prix total
-          getTotalOfItem();
-          getTotal();
-
           // création du listener sur les inputs -----
           settingCount.onchange = (e) => {
             updateCount(product.id, product.color, e.target.value);
@@ -217,7 +213,192 @@ const initCart = function () {
         });
     });
   }
+  // Remplir le prix total
+  getTotalOfItem();
+  getTotal();
 };
 
+// Tests formulaires
+/**
+ * Vérifie si le prénom est valide
+ * @param {string} firstName prénom à tester
+ * @returns boolean
+ */
+const testFirstName = function (firstName) {
+  const regex = /^[A-ZÀ-ÖØ-ẞ][A-Za-zÀ-ÖØ-öø-ÿ-]+$/g;
+  return regex.test(firstName);
+};
+
+/**
+ * Vérifie si le nom est valide
+ * @param {string} lastName nom à tester
+ * @returns boolean
+ */
+const testLastName = function (lastName) {
+  const regex = /^[A-ZÀ-ÖØ-ẞ][A-Za-zÀ-ÖØ-öø-ÿ-]+$/g;
+  return regex.test(lastName);
+};
+
+/**
+ * Vérifie si l'adresse est valide
+ * @param {string} address address à tester
+ * @returns boolean
+ */
+const testAddress = function (address) {
+  const regex = /^[0-9]{0,3}[A-Za-zÀ-ÖØ-öø-ÿ0-9\ -]{5,50}$/g;
+  return regex.test(address);
+};
+
+/**
+ * Vérifie si la ville est valide
+ * @param {string} city ville à tester
+ * @returns boolean
+ */
+const testCity = function (city) {
+  const regex = /[A-ZÀ-ÖØ-ẞ][A-Za-zÀ-ÖØ-öø-ÿ\ -]+$/g;
+  return regex.test(city);
+};
+
+/**
+ * Vérifie si l'email est valide
+ * @param {string} email email à tester
+ * @returns boolean
+ */
+const testEmail = function (email) {
+  const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+  return regex.test(email);
+};
+
+/**
+ * Initialisation des éléments du formulaire
+ */
+const initForm = function () {
+  const submit = document.getElementById("order");
+  submit.disabled = true;
+
+  const firstName = document.getElementById("firstName");
+  const firstNameError = document.getElementById("firstNameErrorMsg");
+
+  const lastName = document.getElementById("lastName");
+  const lastNameError = document.getElementById("lastNameErrorMsg");
+
+  const address = document.getElementById("address");
+  const addressError = document.getElementById("addressErrorMsg");
+
+  const city = document.getElementById("city");
+  const cityError = document.getElementById("cityErrorMsg");
+
+  const email = document.getElementById("email");
+  const emailError = document.getElementById("emailErrorMsg");
+
+  const validateForm = function () {
+    return (
+      testFirstName(firstName.value) &&
+      testLastName(lastName.value) &&
+      testAddress(address.value) &&
+      testCity(city.value) &&
+      testEmail(email.value) &&
+      cart !== []
+    );
+  };
+
+  firstName.onchange = (e) => {
+    if (testFirstName(e.target.value)) {
+      firstNameError.innerText = "";
+      if (validateForm()) {
+        submit.disabled = false;
+      }
+    } else {
+      firstNameError.innerText = "Veuillez renseigner un prénom valide.";
+    }
+  };
+
+  lastName.onchange = (e) => {
+    if (testLastName(e.target.value)) {
+      lastNameError.innerText = "";
+      if (validateForm()) {
+        submit.disabled = false;
+      }
+    } else {
+      lastNameError.innerText = "Veuillez renseigner un nom valide.";
+    }
+  };
+
+  address.onchange = (e) => {
+    if (testAddress(e.target.value)) {
+      addressError.innerText = "";
+      if (validateForm()) {
+        submit.disabled = false;
+      }
+    } else {
+      addressError.innerText = "Veuillez renseigner une adresse valide.";
+    }
+  };
+
+  city.onchange = (e) => {
+    if (testCity(e.target.value)) {
+      cityError.innerText = "";
+      if (validateForm()) {
+        submit.disabled = false;
+      }
+    } else {
+      cityError.innerText = "Veuillez renseigner une ville valide.";
+    }
+  };
+
+  email.onchange = (e) => {
+    if (testEmail(e.target.value)) {
+      emailError.innerText = "";
+      if (validateForm()) {
+        submit.disabled = false;
+      }
+    } else {
+      emailError.innerText = "Veuillez renseigner une adresse mail valide.";
+    }
+  };
+
+  submit.addEventListener("click", (e) => {
+    if (validateForm()) {
+      // création de l'objet de la commande
+      const command = {
+        contact: {
+          firstName: firstName.value,
+          lastName: lastName.value,
+          address: address.value,
+          city: city.value,
+          email: email.value,
+        },
+        products: JSON.parse(localStorage.cart).map((product) =>
+          product.id.toString()
+        ),
+      };
+      // submit
+      fetch(urlBack + "order", {
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+        method: "POST",
+        body: JSON.stringify(command),
+      })
+        .then((res) => {
+          return res.json();
+        })
+        .then((res) => {
+          // réinitialiser le panier
+          localStorage.removeItem("cart");
+          // redirection
+          document.location.href =
+            "./confirmation.html?order=" + res.orderId.toString();
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+    e.preventDefault();
+  });
+};
+
+// Initialisation des tests Formulaires
+initForm();
 // Initialisation du panier
 initCart();
