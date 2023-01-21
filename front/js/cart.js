@@ -96,7 +96,9 @@ const deleteProduct = function (productId, color) {
   // refresh list
   const sectionCart = document.getElementById("cart__items");
   Array.prototype.map.call(sectionCart.children, (child) => {
-    if (child.getAttribute("data-id") === productId.toString()) {
+    if (child.getAttribute("data-id") === productId.toString() &&
+      child.getAttribute("data-color") === color
+    ) {
       sectionCart.removeChild(child);
     }
   });
