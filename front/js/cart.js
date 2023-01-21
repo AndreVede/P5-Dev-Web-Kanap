@@ -96,7 +96,8 @@ const deleteProduct = function (productId, color) {
   // refresh list
   const sectionCart = document.getElementById("cart__items");
   Array.prototype.map.call(sectionCart.children, (child) => {
-    if (child.getAttribute("data-id") === productId.toString() &&
+    if (
+      child.getAttribute("data-id") === productId.toString() &&
       child.getAttribute("data-color") === color
     ) {
       sectionCart.removeChild(child);
@@ -113,107 +114,111 @@ const initCart = async function () {
   const sectionCart = document.getElementById("cart__items");
 
   if (cart !== []) {
-    cart.map(async (product) => {
-      // création des éléments du DOM de l'item -----
-      const article = document.createElement("article");
-      article.classList.add("cart__item");
-      article.setAttribute("data-id", product.id.toString());
-      article.setAttribute("data-color", product.color);
+    await Promise.all(
+      cart.map(async (product) => {
+        // création des éléments du DOM de l'item -----
+        const article = document.createElement("article");
+        article.classList.add("cart__item");
+        article.setAttribute("data-id", product.id.toString());
+        article.setAttribute("data-color", product.color);
 
-      const imageContainer = document.createElement("div");
-      imageContainer.classList.add("cart__item__img");
+        const imageContainer = document.createElement("div");
+        imageContainer.classList.add("cart__item__img");
 
-      const itemContent = document.createElement("div");
-      itemContent.classList.add("cart__item__content");
+        const itemContent = document.createElement("div");
+        itemContent.classList.add("cart__item__content");
 
-      const contentDescription = document.createElement("div");
-      contentDescription.classList.add("cart__item__content__description");
+        const contentDescription = document.createElement("div");
+        contentDescription.classList.add("cart__item__content__description");
 
-      const contentSettings = document.createElement("div");
-      contentSettings.classList.add("cart__item__content__settings");
-      const settingsQuantity = document.createElement("div");
-      settingsQuantity.classList.add("cart__item__content__settings__quantity");
+        const contentSettings = document.createElement("div");
+        contentSettings.classList.add("cart__item__content__settings");
+        const settingsQuantity = document.createElement("div");
+        settingsQuantity.classList.add(
+          "cart__item__content__settings__quantity"
+        );
 
-      // bouton delete
-      const settingsDelete = document.createElement("div");
-      settingsDelete.classList.add("cart__item__content__settings__delete");
-      const deleteCommand = document.createElement("p");
-      deleteCommand.classList.add("deleteItem");
-      deleteCommand.innerText = "Supprimer";
+        // bouton delete
+        const settingsDelete = document.createElement("div");
+        settingsDelete.classList.add("cart__item__content__settings__delete");
+        const deleteCommand = document.createElement("p");
+        deleteCommand.classList.add("deleteItem");
+        deleteCommand.innerText = "Supprimer";
 
-      settingsDelete.append(deleteCommand);
+        settingsDelete.append(deleteCommand);
 
-      // fetch infos du produit -----
-      await fetch(urlBack + product.id.toString())
-        .then((res) => {
-          return res.json();
-        })
-        .then((res) => {
-          // image
-          const img = document.createElement("img");
-          img.src = res.imageUrl;
-          img.alt = res.altTxt;
-          imageContainer.append(img);
+        // fetch infos du produit -----
+        await fetch(urlBack + product.id.toString())
+          .then((res) => {
+            return res.json();
+          })
+          .then((res) => {
+            // image
+            const img = document.createElement("img");
+            img.src = res.imageUrl;
+            img.alt = res.altTxt;
+            imageContainer.append(img);
 
-          // title
-          const title = document.createElement("h2");
-          title.innerText = res.name;
-          contentDescription.append(title);
+            // title
+            const title = document.createElement("h2");
+            title.innerText = res.name;
+            contentDescription.append(title);
 
-          // color
-          const color = document.createElement("p");
-          color.innerText = product.color;
-          contentDescription.append(color);
+            // color
+            const color = document.createElement("p");
+            color.innerText = product.color;
+            contentDescription.append(color);
 
-          // price
-          const price = document.createElement("p");
-          price.innerText = res.price.toString() + " €";
-          contentDescription.append(price);
+            // price
+            const price = document.createElement("p");
+            price.innerText = res.price.toString() + " €";
+            contentDescription.append(price);
 
-          // count
-          const count = document.createElement("p");
-          count.innerText = "Qté : ";
+            // count
+            const count = document.createElement("p");
+            count.innerText = "Qté : ";
 
-          // set count
-          const settingCount = document.createElement("input");
-          settingCount.type = "number";
-          settingCount.classList.add("itemQuantity");
-          settingCount.name = "itemQuantity";
-          settingCount.min = 1;
-          settingCount.max = 100;
-          settingCount.value = product.count;
+            // set count
+            const settingCount = document.createElement("input");
+            settingCount.type = "number";
+            settingCount.classList.add("itemQuantity");
+            settingCount.name = "itemQuantity";
+            settingCount.min = 1;
+            settingCount.max = 100;
+            settingCount.value = product.count;
 
-          settingsQuantity.append(count);
-          settingsQuantity.append(settingCount);
+            settingsQuantity.append(count);
+            settingsQuantity.append(settingCount);
 
-          // Assemblage de l'élément -----
-          contentSettings.append(settingsQuantity);
-          contentSettings.append(settingsDelete);
+            // Assemblage de l'élément -----
+            contentSettings.append(settingsQuantity);
+            contentSettings.append(settingsDelete);
 
-          // content
-          itemContent.append(contentDescription);
-          itemContent.append(contentSettings);
+            // content
+            itemContent.append(contentDescription);
+            itemContent.append(contentSettings);
 
-          // cart item
-          article.append(imageContainer);
-          article.append(itemContent);
+            // cart item
+            article.append(imageContainer);
+            article.append(itemContent);
 
-          // ajouter dans le DOM
-          sectionCart.append(article);
+            // ajouter dans le DOM
+            sectionCart.append(article);
 
-          // création du listener sur les inputs -----
-          settingCount.onchange = (e) => {
-            updateCount(product.id, product.color, e.target.value);
-          };
-          // création du listener sur les delete -----
-          deleteCommand.addEventListener("click", (e) => {
-            deleteProduct(product.id, product.color);
+            // création du listener sur les inputs -----
+            settingCount.onchange = (e) => {
+              updateCount(product.id, product.color, e.target.value);
+            };
+            // création du listener sur les delete -----
+            deleteCommand.addEventListener("click", (e) => {
+              deleteProduct(product.id, product.color);
+            });
+          })
+          .catch((error) => {
+            console.error(error);
           });
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    });
+      })
+    );
   }
   // Remplir le prix total
   getTotalOfItem();
